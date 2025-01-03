@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Code Editor</title>
+    <style>
+        body {
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            background-color: #0d1117;
+            color: #c9d1d9;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+        }
+
+        header {
+            background-color: #161b22;
+            padding: 20px;
+            text-align: center;
+            border-bottom: 1px solid #30363d;
+        }
+
+        h1 {
+            color: #ffffff;
+            font-size: 30px;
+            margin: 0;
+        }
+
+        .container {
+            display: flex;
+            flex-direction: column;
+            height: 80vh;
+            overflow-y: auto;
+            padding: 20px;
+        }
+
+        .editor-container {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+
+        .editor {
+            width: 100%;
+            max-width: 320px;
+            background-color: #161b22;
+            border-radius: 6px;
+            padding: 15px;
+            height: 200px;
+            color: #d1d5da;
+            font-family: 'Courier New', Courier, monospace;
+            border: 1px solid #30363d;
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.1);
+            overflow-y: auto;
+        }
+
+        .output-container {
+            position: relative;
+            width: 100%;
+            height: 60vh;
+        }
+
+        .output {
+            background-color: #161b22;
+            border-radius: 6px;
+            border: 1px solid #30363d;
+            color: #d1d5da;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-sizing: border-box;
+        }
+
+        iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+            border-radius: 6px;
+        }
+
+        .buttons {
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+            margin-top: 15px;
+            flex-wrap: wrap;
+        }
+
+        button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: background-color 0.3s, transform 0.2s;
+            width: 100%;
+            max-width: 150px;
+        }
+
+        button:hover {
+            transform: scale(1.05);
+        }
+
+        .copy-btn {
+            background-color: #58a6ff;
+            color: #fff;
+        }
+
+        .paste-btn {
+            background-color: #2ea44f;
+            color: #fff;
+        }
+
+        .download-btn {
+            background-color: #f6a9bc;
+            color: #fff;
+        }
+
+        .run-btn {
+            background-color: #f0ad4e;
+            color: #fff;
+        }
+
+        .input-area {
+            width: 100%;
+            height: 100%;
+            color: #dcdcdc;
+            background-color: #161b22;
+            border: none;
+            border-radius: 5px;
+            padding: 10px;
+            font-size: 14px;
+            resize: none;
+            box-sizing: border-box;
+        }
+
+        .fullscreen-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            padding: 10px;
+            background-color: #6f42c1;
+            color: #fff;
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+        }
+
+        .fullscreen-btn:hover {
+            background-color: #5a3f9b;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Interactive Code Editor</h1>
+    </header>
+    <div class="container">
+        <div class="editor-container">
+            <div class="editor">
+                <h3>HTML</h3>
+                <textarea id="html-code" class="input-area" placeholder="Write your HTML code here..."></textarea>
+            </div>
+            <div class="editor">
+                <h3>CSS</h3>
+                <textarea id="css-code" class="input-area" placeholder="Write your CSS code here..."></textarea>
+            </div>
+            <div class="editor">
+                <h3>JavaScript</h3>
+                <textarea id="js-code" class="input-area" placeholder="Write your JavaScript code here..."></textarea>
+            </div>
+        </div>
+
+        <div class="buttons">
+            <button class="copy-btn" onclick="copyCode()">Copy</button>
+            <button class="paste-btn" onclick="pasteCode()">Paste</button>
+            <button class="download-btn" onclick="downloadCode()">Download</button>
+            <button class="run-btn" onclick="runCode()">Run</button>
+        </div>
+
+        <div class="output-container">
+            <div class="output" id="output-area">
+                <iframe id="output-frame"></iframe>
+                <button class="fullscreen-btn" onclick="toggleFullScreen()">⛶</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function runCode() {
+            const htmlCode = document.getElementById("html-code").value;
+            const cssCode = `<style>${document.getElementById("css-code").value}</style>`;
+            const jsCode = `<script>${document.getElementById("js-code").value}<\/script>`;
+            
+            const iframe = document.getElementById("output-frame");
+            const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+
+            iframeDoc.open();
+            iframeDoc.write(htmlCode + cssCode + jsCode);
+            iframeDoc.close();
+        }
+
+        function copyCode() {
+            const htmlCode = document.getElementById("html-code").value;
+            const cssCode = document.getElementById("css-code").value;
+            const jsCode = document.getElementById("js-code").value;
+
+            const fullCode = `HTML:\n${htmlCode}\n\nCSS:\n${cssCode}\n\nJavaScript:\n${jsCode}`;
+            navigator.clipboard.writeText(fullCode).then(() => {
+                alert("Code copied to clipboard!");
+            });
+        }
+
+        function pasteCode() {
+            navigator.clipboard.readText().then(text => {
+                const parts = text.split("\n\n");
+                if (parts.length > 0) {
+                    document.getElementById("html-code").value = parts[0].replace("HTML:", "").trim();
+                }
+                if (parts.length > 1) {
+                    document.getElementById("css-code").value = parts[1].replace("CSS:", "").trim();
+                }
+                if (parts.length > 2) {
+                    document.getElementById("js-code").value = parts[2].replace("JavaScript:", "").trim();
+                }
+            });
+        }
+
+        function downloadCode() {
+            const htmlCode = document.getElementById("html-code").value;
+            const cssCode = document.getElementById("css-code").value;
+            const jsCode = document.getElementById("js-code").value;
+
+            const code = `
+HTML Code:
+${htmlCode}
+
+CSS Code:
+${cssCode}
+
+JavaScript Code:
+${jsCode}
+            `;
+
+            const blob = new Blob([code], { type: 'text/plain' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = 'code.txt';
+            link.click();
+        }
+
+        function toggleFullScreen() {
+            const outputArea = document.getElementById('output-area');
+            const iframe = document.getElementById('output-frame');
+            const isFullScreen = outputArea.style.position === 'fixed';
+
+            if (isFullScreen) {
+                outputArea.style.position = 'relative';
+                outputArea.style.height = '100%';
+                iframe.style.height = '100%';
+                document.body.style.overflow = 'hidden';
+            } else {
+                outputArea.style.position = 'fixed';
+                outputArea.style.top = '0';
+                outputArea.style.left = '0';
+                outputArea.style.width = '100%';
+                outputArea.style.height = '100vh';
+                iframe.style.height = '100vh';
+                document.body.style.overflow = 'hidden';
+            }
+        }
+    </script>
+</body>
+</html>
